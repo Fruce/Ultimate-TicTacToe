@@ -22,33 +22,31 @@ X = PIL.Image.open(r'cross.png')
 X = X.resize((150,150), Image.Resampling.LANCZOS)
 X = ImageTk.PhotoImage(X)
 #square image
+pinksquare = PIL.Image.open(r'pinksquare.png')
+pinksquare = pinksquare.resize((335,200), Image.Resampling.LANCZOS)
+pinksquare = ImageTk.PhotoImage(pinksquare)
+#green square
 bluesquare = PIL.Image.open(r'bluesquare.png')
 bluesquare = bluesquare.resize((335,200), Image.Resampling.LANCZOS)
 bluesquare = ImageTk.PhotoImage(bluesquare)
-#green square
-greensquare = PIL.Image.open(r'greensquare.png')
-greensquare = greensquare.resize((335,200), Image.Resampling.LANCZOS)
-greensquare = ImageTk.PhotoImage(greensquare)
-#big blue ox
-bbb = PIL.Image.open(r'bluesquare.png')
+#big pink box
+bbb = PIL.Image.open(r'pinksquare.png')
 bbb = bbb.resize((1155,700), Image.Resampling.LANCZOS)
 bbb = ImageTk.PhotoImage(bbb)
 #big green box
-bgb = PIL.Image.open(r'greensquare.png')
+bgb = PIL.Image.open(r'bluesquare.png')
 bgb = bgb.resize((1155,700), Image.Resampling.LANCZOS)
 bgb = ImageTk.PhotoImage(bgb)
 
 # making and gridding the canvas
-game_panel = Canvas(root,bg="#ffe6ff",height=520,width=520)
+game_panel = Canvas(root,bg="#ffe6ff",height=460,width=460)
 game_panel.pack()
-#grid
-game_panel.create_image(0,0,anchor='nw',image=grid)
-bigbluebox = game_panel.create_image(-300,-85,anchor="nw",image=bbb,state='hidden')
-biggreenbox = game_panel.create_image(-300,-85,anchor="nw",image=bgb,state='hidden')
-
+#bigboxes
+bigpinkbox = game_panel.create_image(-300,-85,anchor="nw",image=bbb,state='hidden')
+bigbluebox = game_panel.create_image(-300,-85,anchor="nw",image=bgb,state='hidden')
 #defining lbutt
 lbutt = ",".join([",".join([f"button{x}{y}" for y in range(1, 10)]) for x in range(1, 10)]).split(",")
-#making the shapes which shows up when local box is won
+#making the shapes which shows up when local box is won and square highlights
 count=1
 def shapes(x,y,shape):
     global count
@@ -56,25 +54,27 @@ def shapes(x,y,shape):
     count += 1
     if count - 1 == 9:
         count = 1
-
-for i in range(30,341,155):
-    for j in range(30,341,155):
-        shapes(j,i,'O')
-for i in range(30, 341, 155):
-    for j in range(30, 341, 155):
-        shapes(j, i, 'X')
-for i in range(4,414,158):
-    for j in range(-61, 256, 158):
+for i in range(-26,384,158):
+    for j in range(-91, 226, 158):
         shapes(j,i,'bluesquare')
-for i in range(4,414,158):
-    for j in range(-61, 256, 158):
-        shapes(j,i,'greensquare')
+for i in range(-26,394,158):
+    for j in range(-91, 226, 158):
+        shapes(j,i,'pinksquare')
+game_panel.create_image(-30,-30,anchor='nw',image=grid)
+for i in range(0,311,155):
+    for j in range(0,311,155):
+        shapes(j,i,'O')
+for i in range(0, 311, 155):
+    for j in range(0, 311, 155):
+        shapes(j, i, 'X')
 
 #disable / enable buttons function
-def disable(x,y = "greensquare"):
+def disable(x,y = "bluesquare",c="#7ec7e6"):
     z = list(x)[-1]
     for i in lbutt:
         if "button" + z in i:
+            exec(i + f"[\"bg\"] = \'{c}\'")
+            exec(i + f"[\"activebackground\"] = \'{c}\'")
             exec(f'game_panel.itemconfig({y}' + z + ',state=\'normal\')')
 
         if "button" + z in i and i not in disabled:
@@ -82,22 +82,22 @@ def disable(x,y = "greensquare"):
 
         elif "button" + z not in i:
             exec(i + "[\"state\"] = DISABLED")
-            #exec(f'game_panel.itemconfig({y}' + z + ',state=\'hidden\')')
+            exec(i + "[\"bg\"] = \"#ffe6ff\"")
+            exec(i + "[\"activebackground\"] = \"#ffe6ff\"")
 
-
-
-def checkifdisabled(p,z='square',y='biggreenbox',):
+def checkifdisabled(p,z='square',y='bigbluebox',c="#7ec7e6"):
     try:
         if all(elem in disabled for elem in [f"button{p}{q}" for q in range(1,10)]):
             for i in lbutt:
                 if i not in disabled:
                     exec(f"{i}[\"state\"] = ACTIVE")
-
+            c
             for i in lbutt:
+                exec(i + f"[\"bg\"] = \'{c}\'")
+                exec(i + f"[\"activebackground\"] = \'{c}\'")
                 exec(f'game_panel.itemconfig({z}' + i[-2] + ',state=\'hidden\')')
-                print('hi')
-            exec(f'game_panel.itemconfig({y},state=\'normal\')')
 
+            exec(f'game_panel.itemconfig({y},state=\'normal\')')
     except:
         pass
 
@@ -111,7 +111,6 @@ def local_win(x,y,z):
                 break
         if winrow:
             break
-
     for i in range(1,4):
         wincol = True
         for j in range(i,i+7,3):
@@ -135,11 +134,10 @@ def local_win(x,y,z):
         exec(f'game_panel.itemconfig({z}{x},state=\'normal\')')
         exec(f'game_panel.delete(\'win{x}\')')
         for i in lbutt:
-             if "button"+x in i:
-                 exec(i+"[\'state\'] =  DISABLED")
-                 if i not in disabled:
-                     disabled.append(i)
-
+            if "button"+x in i:
+                exec(i+"[\'state\'] =  DISABLED")
+                if i not in disabled:
+                    disabled.append(i)
 
 def global_win():
     winrow = False
@@ -162,6 +160,15 @@ def global_win():
         c.send(bytes('lost', "utf-8"))
     return winrow or wincol or windiag1 or windiag2
 
+def hideboxes(box,x):
+    print('hidebox: ',x)
+    if box == 'blue':
+        exec(f'game_panel.itemconfig(bluesquare{x},state=\'hidden\')')
+        exec(f'game_panel.itemconfig(bigbluebox,state=\'hidden\')')
+    else:
+        exec(f'game_panel.itemconfig(pinksquare{x},state=\'hidden\')')
+        exec(f'game_panel.itemconfig(bigpinkbox,state=\'hidden\')')
+
 def listen():
     global last_move
     while True:
@@ -172,10 +179,9 @@ def listen():
         elif msg == "O":
             last_move = "O"
         elif "button" in msg:
-            exec(f'game_panel.itemconfig(bluesquare' + msg[-2] + ',state=\'hidden\')')
-            exec(f'game_panel.itemconfig(bigbluebox,state=\'hidden\')')
+            temp = msg
+            hideboxes('pink',msg[-2])
             disable(msg)
-            checkifdisabled(msg[-1],"greensquare")
             if last_move == "O":
                 exec(msg + "[\"text\"] = \"X\"")
                 exec(msg + "[\"state\"] = DISABLED")
@@ -186,17 +192,12 @@ def listen():
                 exec(msg + "[\"state\"] = DISABLED")
                 disabled.append(msg)
                 dic[msg] = "O"
-
             local_win(msg[-2],moves[moves.index(last_move)-1],moves[moves.index(last_move)-1])
-                # for i in lbutt:
-                #     if "button"+msg[-2] in i:
-                #         exec(i + "[\"bg\"] = \"#eb6e8b\"")
-                #         exec(i + "[\"activebackground\"] = \"#eb6e8b\"")
-                #         exec(i+"[\'state\'] =  DISABLED")
-                #         if i not in disabled:
-                #             disabled.append(i)
+            checkifdisabled(msg[-1], "pinksquare")
+
         elif "lost" in msg:
             disableall()
+            hideboxes('blue',temp[-1])
             messagebox.showinfo("GAME OVER","YOU LOST!!! YOU DUMB BASTARD\nLLLLLLL")
 
 def disableall():
@@ -214,10 +215,8 @@ moves = ["X","O"]
 def change(x):
     global last_move
     c.send(bytes(x, "utf-8"))
-
-    disable(x,"bluesquare")
-    exec(f'game_panel.itemconfig(greensquare' + x[-2] + ',state=\'hidden\')')
-    exec(f'game_panel.itemconfig(biggreenbox,state=\'hidden\')')
+    disable(x, "pinksquare",'#c354f7')
+    hideboxes('blue',x[-2])
     if last_move == "O":
         exec(x + "[\"text\"] = \"X\"")
         exec(x + "[\"state\"] = DISABLED")
@@ -232,19 +231,13 @@ def change(x):
         dic[x] = "O"
         last_move = "O"
         c.send(bytes("O", "utf-8"))
-    checkifdisabled(x[-1],'bluesquare','bigbluebox')
-    disableall()
     local_win(x[-2],last_move,last_move)
-        # for i in lbutt:
-        #     if "button"+x[-2] in i:
-        #         exec(i + "[\"bg\"] = \"#6bff81\"")
-        #         exec(i + "[\"activebackground\"] = \"#6bff81\"")
-        #         exec(i+"[\'state\'] =  DISABLED")
-        #         if i not in disabled:
-        #             disabled.append(i)
-        #l_wins[int(x[-2])] = last_move
+    checkifdisabled(x[-1], 'pinksquare', 'bigpinkbox','#c354f7')
+    disableall()
     if global_win():
         disableall()
+        print('global win: ',x)
+        hideboxes('pink',x[-1])
         messagebox.showinfo("GAME OVER","YOU WON")
 
 #making the buttons
@@ -265,33 +258,32 @@ def make_grid(x, y):
         count = 1
         k += 1
 
-for i in range(43,130,43):
-    for j in range(40,131,45):
+for i in range(13,100,43):
+    for j in range(15,100,42):
         make_grid(j,i)
-for i in range(43, 130, 43):
-    for j in range(195,286,45):
+for i in range(13,100,43):
+    for j in range(170,255,42):
         make_grid(j,i)
-for i in range(43, 130, 43):
-    for j in range(350,441,45):
+for i in range(13,100,43):
+    for j in range(325,429,42):
         make_grid(j,i)
-for i in range(200,287,43):
-    for j in range(40,131,45):
+for i in range(170,257,43):
+    for j in range(15,100,42):
         make_grid(j,i)
-for i in range(200, 287, 43):
-    for j in range(195,286,45):
+for i in range(170,257,43):
+    for j in range(170,255,42):
         make_grid(j,i)
-for i in range(200, 287, 43):
-    for j in range(350,441,45):
+for i in range(170,257,43):
+    for j in range(325,429,42):
         make_grid(j,i)
-for i in range(355,444,43):
-    for j in range(40,131,45):
+for i in range(325,414,43):
+    for j in range(15,100,42):
         make_grid(j,i)
-for i in range(355, 444, 43):
-    for j in range(195,286,45):
+for i in range(325,414,43):
+    for j in range(170,255,42):
         make_grid(j,i)
-for i in range(355, 444, 43):
-    for j in range(350,441,45):
+for i in range(325,414,43):
+    for j in range(325,429,42):
         make_grid(j,i)
-
 
 root.mainloop()
